@@ -39,7 +39,7 @@
         'aria-valuemax': this.options.max, // set maximum (end) value
         'aria-describedby': id + '_instructions' // add aria-describedby attribute
       })
-			.addClass('ik_progressbar');
+			.addClass('ik_progressbar')
 			.on('keydown.ik', {'plugin': this}, this.onKeyDown);
 		
 		this.fill = $('<div/>')
