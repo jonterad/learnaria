@@ -32,16 +32,15 @@
 		this.element
 			.attr({
 				'id': id,
-				'tabindex': -1, // add current element to tab order
-				'role': 'progressbar', // assign progressbar role
-				'aria-valuenow': 0, // set initial current value to 0
-				'aria-valuemin': 0, // set minimum start value to 0
-				'aria-valuemax': this.options.max, // set maximum (end) value
-				'aria-describedby': id + '_instructions' // add aria-describedby attribute
-
-			})
-			.addClass('ik_progressbar')
-      ;
+        'tabindex': -1, // add current element to tab order
+        'role': 'progressbar', // assign progressbar role
+        'aria-valuenow': 0, // set current value to 0
+        'aria-valuemin': 0, // set minimum (start) value to 0 (required by screen readers)
+        'aria-valuemax': this.options.max, // set maximum (end) value
+        'aria-describedby': id + '_instructions' // add aria-describedby attribute
+      })
+			.addClass('ik_progressbar');
+			.on('keydown.ik', {'plugin': this}, this.onKeyDown);
 		
 		this.fill = $('<div/>')
 			.addClass('ik_fill');
