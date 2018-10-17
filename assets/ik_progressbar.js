@@ -54,13 +54,13 @@
 			.appendTo(this.element);
 
     $('<div/>') // add div element to be used with aria-described attribute of the progressbar
-        .text(this.options.instructions) // get instruction text from plugin options
-            .addClass('ik_readersonly') // hide element from visual display
-            .attr({
-            'id': id + '_instructions',
-            'aria-hidden': 'true'  // hide element from screen readers to prevent it from being read twice
-    })
-    .appendTo(this.element);			
+      .text(this.options.instructions) // get instruction text from plugin options
+      .addClass('ik_readersonly') // hide element from visual display
+      .attr({
+          'id': id + '_instructions',
+          'aria-hidden': 'true'  // hide element from screen readers to prevent it from being read twice
+  		})
+  		.appendTo(this.element);			
 
 		$('<div/>')
 			.addClass('ik_track')
@@ -78,7 +78,7 @@
 		
 		var value;
 		
-		value = Number( this.element.data('aria-valuenow') ); // accessible
+		value = Number( this.element.attr('aria-valuenow') ); // accessible
 		
 		return parseInt( value );
 		
