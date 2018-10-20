@@ -1,17 +1,11 @@
 ;(function ( $, window, document, undefined ) {
 	
 	var pluginName = 'ik_carousel',
-		defaults = { // default settings
+		defaults = { 
+			'instructions': 'Carousel widget. Use left and right arrows to navigate between slides.',
 			'animationSpeed' : 3000
 		};
 	 
-	/**
-	 * @constructs Plugin
-	 * @param {Object} element - Current DOM element from selected collection.
-	 * @param {Object} options - Configuration options.
-	 * @param {string} options.instructions - Custom instructions for screen reader users.
-	 * @param {number} options.animationSpeed - Slide transition speed in milliseconds.
-	 */
 	function Plugin( element, options ) {
 		
 		this._name = pluginName;
@@ -22,8 +16,8 @@
 		this.init();
 	
 	};
-	
-	/** Initializes plugin. */
+		
+	// FUNCTION to initialize accessible carousel and slides
 	Plugin.prototype.init = function () {
 		
 		var id, plugin, $elem, $image, $controls, $navbar;
@@ -34,17 +28,25 @@
 		
 		$elem
 			.attr({
-				'id': id
+				'id': id,
+		    'role': 'region', 
+		    'tabindex': 0, 
+		    'aria-describedby': id + '_instructions'
 			})
 			.addClass('ik_carousel')
-			.on('mouseenter', {'plugin': plugin}, plugin.stopTimer)
-			.on('mouseleave', {'plugin': plugin}, plugin.startTimer)
+			.on('keydown', {'plugin': plugin}, plugin.onKeyDown)
+			.on('focusin mouseenter', {'plugin': plugin}, plugin.stopTimer)
+			.on('focusout mouseleave', {'plugin': plugin}, plugin.startTimer);
 		
-		$controls = $('<div/>')
-
-			.addClass('ik_controls')
-			.appendTo($elem);
-				
+		$('<div/>') 
+	    .attr({
+	        'id': id + '_instructions',
+	        'aria-hidden': 'true'
+	    })
+	    .text(this.options.instructions)
+	    .addClass('ik_readersonly')
+	    .appendTo($elem);    
+		
 		$('<div/>')
 			.addClass('ik_button ik_prev')
 			.on('click', {'plugin': plugin, 'slide': 'left'}, plugin.gotoSlide)
@@ -54,7 +56,14 @@
 			.addClass('ik_button ik_next')
 			.on('click', {'plugin': plugin, 'slide': 'right'}, plugin.gotoSlide)
 			.appendTo($controls);
-		
+
+		$controls = $('<div/>')
+	    .attr({
+	        'aria-hidden': 'true' // hide controls from screen readers
+	    })
+	    .addClass('ik_controls')
+	    .appendTo($elem);												
+
 		$navbar = $('<ul/>')
 			.addClass('ik_navbar')
 			.appendTo($controls);
@@ -67,13 +76,17 @@
 				$me = $(el);
 				$src = $me.find('img').remove().attr('src');
 				
-				$me.css({
+				$me.attr({
+			    	'aria-hidden': 'true' // hide images from screen readers
+			    })
+					.css({
 						'background-image': 'url(' + $src + ')'
 					});	
 				
 				$('<li/>')
 					.on('click', {'plugin': plugin, 'slide': i}, plugin.gotoSlide)
 					.appendTo($navbar);
+
 			});
 		
 		plugin.navbuttons = $navbar.children('li');
@@ -83,12 +96,7 @@
 		
 	};
 	
-	/** 
-	 * Starts carousel timer. 
-	 * Reference to plugin must be passed with event data.
-	 * 
-	 * @param {Object} event - Mouse or focus event.
-	 */
+	// FUNCTION to start the timer to animate between slides
 	Plugin.prototype.startTimer = function (event) {
 		
 		var plugin;
@@ -100,34 +108,31 @@
 			clearInterval(plugin.timer);
 			plugin.timer = null;
 		}
+
+		if (event.type === 'focusout') {
+		    plugin.element.removeAttr('aria-live');
+		}
 		
 		plugin.timer = setInterval(plugin.gotoSlide, plugin.options.animationSpeed, {'data':{'plugin': plugin, 'slide': 'right'}});
 		
 	};
 	
-	/** 
-	 * Stops carousel timer. 
-	 * 
-	 * @param {object} event - Mouse or focus event.
-	 * @param {object} event.data - Event data.
-	 * @param {object} event.data.plugin - Reference to plugin.
-	 */
+	// FUNCTION to stop the timer
 	Plugin.prototype.stopTimer = function (event) {
 		
 		var plugin = event.data.plugin;
+
 		clearInterval(plugin.timer);
 		plugin.timer = null;
 		
+		if (event.type === 'focusin') {
+		   plugin.element.attr({'aria-live': 'polite'});
+		}
+
+		
 	};
-	
-	/** 
-	 * Goes to specified slide. 
-	 * 
-	 * @param {object} event - Mouse or focus event.
-	 * @param {object} event.data - Event data.
-	 * @param {object} event.data.plugin - Reference to plugin.
-	 * @param {number} event.data.slide - Index of the slide to show.
-	 */
+
+	// FUNCTION to access specific slide
 	Plugin.prototype.gotoSlide = function (event) {
 		
 		var plugin, n, $elem, $active, $next, index, direction, transevent;
@@ -166,18 +171,48 @@
 			next = event.data.next;
 			dir = event.data.dir;
 			
-			active.off( ik_utils.getTransitionEventName() )
-				.removeClass(direction + ' active');
+			active
+				.attr({
+	        'aria-hidden': 'true'
+	    	})
+	    	.off( ik_utils.getTransitionEventName() )
+				.removeClass(direction + ' active');				
 				
-			next.removeClass('next')
+			next
+			  .attr({
+        	'aria-hidden': 'false'
+    		})		
+				.removeClass('next')
 				.addClass('active');
 			
-		});
+		}).focus();
 		
 		plugin.navbuttons.removeClass('active').eq(n).addClass('active');
 		
 	}
-	
+
+	// FUNCTION to allow keyboard operability
+	Plugin.prototype.onKeyDown = function (event) {
+       
+  	var plugin = event.data.plugin;
+     
+  	switch (event.keyCode) {
+         
+      case ik_utils.keys.left:
+          event.data = {'plugin': plugin, 'slide': 'left'};
+          plugin.gotoSlide(event);
+          break;
+      case ik_utils.keys.right:
+          event.data = {'plugin': plugin, 'slide': 'right'};
+          plugin.gotoSlide(event);
+          break;
+      case ik_utils.keys.esc:
+          plugin.element.blur();
+          break;
+    }
+
+  }	
+
 	$.fn[pluginName] = function ( options ) {
 		
 		return this.each(function () {
