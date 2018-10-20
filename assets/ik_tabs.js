@@ -70,8 +70,7 @@
 				// if keydown to this go to this tab
 				// if clicked to this go to this tab
 				// place the tab at the end of the inside of the tab panel							
-				$panel.removeAttr('title');
-				console.log($panel);
+				$panel.removeAttr('title');				
 				lbl = $panel.attr('data-title'); 				
 				$tab = $('<li/>').attr({
 						'id': id + '_tab' + i, // create unique id for a tab
