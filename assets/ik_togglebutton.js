@@ -31,18 +31,18 @@
 		id = 'toggle' + $('.ik_togglebutton').length; // generate unique id
 		$elem = this.element
 			.attr({
-				"id": id //,
-//			"tabindex": 0,
-//			"role": "button",
-//			"aria-label": plugin.options.label,
-//			"aria-pressed": false
+				"id": id,
+				"tabindex": 0,
+				"role": "button",
+				"aria-label": plugin.options.label,
+				"aria-pressed": false
 			});
 		
 		plugin.options.onToggle = plugin.options.onToggle.bind(plugin);
 		
 		$elem
 			.on('click', {plugin: plugin}, plugin.onActivate)
-//		.on('keydown', {plugin: plugin}, plugin.onActivate)
+			.on('keydown', {plugin: plugin}, plugin.onActivate)
 		;
 		
 	};
@@ -68,18 +68,16 @@
 			if (plugin.options.isPressed) {
 				$me
 					.removeClass('pressed')
-//				.attr({
-//					"aria-pressed": false
-//				})
-					;
+					.attr({
+						"aria-pressed": false
+					});
 				plugin.options.isPressed = false;
 			} else {
 				$me
 					.addClass('pressed')
-//				.attr({
-//				  "aria-pressed": true
-//					})
-          ;
+					.attr({
+				  	"aria-pressed": true
+					});
 				plugin.options.isPressed = true;
 			}
 			
@@ -87,6 +85,38 @@
 		}
 		
 	};
+
+	Plugin.prototype.onActivate = function (event) {
+       
+    var plugin, $me;
+   
+    if (event.type === 'click' || event.keyCode === ik_utils.keys.enter || event.keyCode === ik_utils.keys.space) {
+       
+        event.stopPropagation();
+       
+        plugin = event.data.plugin;
+        $me = plugin.element;
+       
+        if (plugin.options.isPressed) {
+            $me
+                .removeClass('pressed')
+            .attr({
+                "aria-pressed": false
+            });
+            plugin.options.isPressed = false;
+        } else {
+            $me
+                .addClass('pressed')
+            .attr({
+              "aria-pressed": true
+                });
+            plugin.options.isPressed = true;
+        }
+       
+        plugin.options.onToggle();
+    }
+       
+	};	
 	
 	$.fn[pluginName] = function ( options ) {
 		
